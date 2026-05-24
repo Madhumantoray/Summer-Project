@@ -33,6 +33,10 @@ Completed:
 - MACD calculation
 - MACD signal calculation
 - MACD histogram calculation
+- Google News RSS sentiment route
+- FinBERT headline sentiment service
+- Daily sentiment aggregation
+- 7 day rolling sentiment average
 - Modular stock data service
 - Error response shape preserved as `{ "error": "..." }`
 
@@ -61,6 +65,11 @@ Completed:
 - Show button workflow
 - Reset dates workflow
 - Price, RSI, and MACD panels
+- Sentiment chart below MACD
+- Daily sentiment line
+- Rolling sentiment average line
+- Sentiment tooltip
+- Sentiment summary card
 - Dark and light mode
 - Theme persistence
 - Theme-aware chart colors
@@ -74,6 +83,8 @@ Completed:
 - Moved fetch state into a custom hook
 - Moved chart data shaping into shared frontend utilities
 - Centralized chart theme tokens
+- Added dedicated sentiment data hook
+- Added lazy-loaded Recharts sentiment component
 - Added chart resize handling
 - Improved chart lifecycle cleanup
 - Removed remote Google font build dependency
@@ -111,6 +122,11 @@ Backend modules:
 ```txt
 backend/main.py
 backend/security.py
+backend/services/news_service.py
+backend/services/cleaning_service.py
+backend/services/finbert_service.py
+backend/services/aggregation_service.py
+backend/services/sentiment_service.py
 backend/services/stock_data.py
 ```
 
