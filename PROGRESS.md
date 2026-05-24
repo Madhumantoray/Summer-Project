@@ -1,76 +1,140 @@
-# Stock Research Dashboard — Progress
+# Stock Research Dashboard Progress
 
 ## Project Goal
 
 Build a quantitative stock research platform combining:
 
-- Technical Analysis
-- Financial Data Visualization
-- NLP-based Sentiment Analysis
-- Behavioral Finance Research
+- Technical analysis
+- Financial data visualization
+- NLP-based sentiment analysis
+- Behavioral finance research
 
 Core research hypothesis:
 
 > Strongly negative financial sentiment may precede mean-reverting positive returns.
 
----
+## Current Development Status
 
-# Current Development Status
+## Phase 1: Core Market Dashboard
 
-## Phase 1 — Core Market Dashboard
-Status: COMPLETED
+Status: Completed
 
 ### Backend
-- FastAPI backend created
-- REST API endpoints implemented
-- Yahoo Finance integration using yfinance
-- Dynamic stock fetching
-- Timeframe filtering support
-- Custom date range support
-- NSE stock handling (`.NS`)
-- Error handling added
-- CORS configured
 
-### Technical Indicators
-Implemented:
-- RSI
-- MACD
-- MACD Signal
-- MACD Histogram
+Completed:
+- FastAPI backend
+- REST API endpoints
+- Yahoo Finance integration through yfinance
+- Dynamic stock fetching
+- NSE stock handling with `.NS`
+- Preset timeframe filtering
+- Custom date range filtering
+- RSI calculation
+- MACD calculation
+- MACD signal calculation
+- MACD histogram calculation
+- Modular stock data service
+- Error response shape preserved as `{ "error": "..." }`
+
+Security pass completed:
+- In-memory IP rate limiting
+- Configurable CORS allowlist
+- Basic security headers
+- Symbol validation
+- Timeframe validation
+- ISO date validation
+- Sanitized unexpected exceptions
 
 ### Frontend
-Implemented using:
-- Next.js
-- TailwindCSS
-- Lightweight Charts
 
-Features:
-- Candlestick chart
-- Line chart toggle
-- Volume histogram
-- Hover OHLC display
-- Return calculation panel
+Completed:
+- Next.js app
+- TailwindCSS styling
+- Lightweight Charts integration
+- Candlestick chart mode
+- Line chart mode
+- Volume histogram overlay
+- Hover OHLC and volume display
+- Period returns panel
 - Custom timeframe selection
-- Custom date range input
+- Custom date range inputs
 - Show button workflow
-- Reset filters
-- Multi-panel technical chart layout
+- Reset dates workflow
+- Price, RSI, and MACD panels
+- Dark and light mode
+- Theme persistence
+- Theme-aware chart colors
+- Loading, empty, and error states
+- Responsive desktop and mobile layout
 
-### Chart Panels
-Implemented:
-1. Price Chart
-2. RSI Panel
-3. MACD Panel
+### Refactor Status
 
----
+Completed:
+- Split monolithic frontend page into reusable components
+- Moved fetch state into a custom hook
+- Moved chart data shaping into shared frontend utilities
+- Centralized chart theme tokens
+- Added chart resize handling
+- Improved chart lifecycle cleanup
+- Removed remote Google font build dependency
+- Updated metadata
+- Reworked UI toward a compact quantitative research interface
 
-# Current Architecture
+## Current Architecture
 
 ```txt
 Frontend (Next.js)
-    ↓
+    |
+    | HTTP
+    v
 FastAPI Backend
-    ↓
-Yahoo Finance API
-    ↓
-Technical Indicator Engine
+    |
+    | yfinance
+    v
+Yahoo Finance
+    |
+    v
+Indicator Service (pandas + ta)
+```
+
+Frontend modules:
+
+```txt
+app/page.js
+app/components/
+app/hooks/
+app/lib/
+```
+
+Backend modules:
+
+```txt
+backend/main.py
+backend/security.py
+backend/services/stock_data.py
+```
+
+## Verified
+
+- Frontend lint passes.
+- Frontend production build passes.
+- Desktop layout checked in browser.
+- Mobile layout checked in browser.
+- Backend unavailable state handled gracefully.
+
+## Known Remaining Items
+
+- Recreate or repair the backend virtualenv if the local Python path changes.
+- Add backend unit tests for validation, timeframe mapping, indicator columns, and empty data responses.
+- Add frontend tests for fetch URL construction, returns calculation, and chart data transforms.
+- Replace in-memory rate limiting with Redis or another shared store before multi-process production deployment.
+- Tighten allowed CORS origins for any deployed domain.
+
+## Next Phase Ideas
+
+- Add sentiment ingestion.
+- Add news source management.
+- Add sentiment scoring.
+- Add event study views.
+- Add watchlists.
+- Add exportable research reports.

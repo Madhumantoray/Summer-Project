@@ -1,26 +1,183 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --accent-info: #197f91;
+  --accent-negative: #b54444;
+  --accent-negative-soft: rgba(181, 68, 68, 0.28);
+  --accent-positive: #1a8165;
+  --accent-positive-soft: rgba(26, 129, 101, 0.12);
+  --accent-warning: #a36d1d;
+  --background: #eeeae2;
+  --border-control: #cfc7ba;
+  --border-panel: #d7d1c6;
+  --border-subtle: #ded8ce;
+  --foreground: #1c222b;
+  --shadow-panel: 0 18px 48px rgba(52, 45, 34, 0.08);
+  --surface-chart: #f3f0ea;
+  --surface-control: #e7e1d7;
+  --surface-error: rgba(181, 68, 68, 0.08);
+  --surface-page: #e9e4da;
+  --surface-raised: #f7f4ef;
+  --text-muted: #7c746b;
+  --text-primary: #1c222b;
+  --text-secondary: #56606f;
+}
+
+.dark {
+  --accent-info: #37b6c8;
+  --accent-negative: #e05f5f;
+  --accent-negative-soft: rgba(224, 95, 95, 0.28);
+  --accent-positive: #20b28e;
+  --accent-positive-soft: rgba(32, 178, 142, 0.12);
+  --accent-warning: #d49c3d;
+  --background: #080b10;
+  --border-control: #263143;
+  --border-panel: #202938;
+  --border-subtle: #18202c;
+  --foreground: #eef2f7;
+  --shadow-panel: 0 20px 60px rgba(0, 0, 0, 0.28);
+  --surface-chart: #080b10;
+  --surface-control: #101722;
+  --surface-error: rgba(224, 95, 95, 0.1);
+  --surface-page: #0c1017;
+  --surface-raised: #111722;
+  --text-muted: #6f7b8e;
+  --text-primary: #eef2f7;
+  --text-secondary: #a7b0bf;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: Inter, ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+* {
+  box-sizing: border-box;
+}
+
+html {
+  background: var(--surface-page);
 }
 
 body {
-  background: var(--background);
+  background: var(--surface-page);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+}
+
+button,
+input,
+select {
+  font: inherit;
+}
+
+::selection {
+  background: var(--accent-info);
+  color: var(--surface-page);
+}
+
+.control-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+
+.control-field span {
+  color: var(--text-muted);
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-size: 0.625rem;
+  letter-spacing: 0.14em;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.input-control {
+  background: var(--surface-control);
+  border: 1px solid var(--border-control);
+  border-radius: 0.375rem;
+  color: var(--text-primary);
+  height: 2.5rem;
+  outline: none;
+  padding: 0 0.75rem;
+  transition:
+    background-color 180ms ease,
+    border-color 180ms ease,
+    box-shadow 180ms ease,
+    color 180ms ease;
+  width: 100%;
+}
+
+.input-control:focus {
+  border-color: var(--accent-info);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent-info) 18%, transparent);
+}
+
+.button-primary,
+.button-secondary {
+  align-items: center;
+  border-radius: 0.375rem;
+  display: inline-flex;
+  font-size: 0.875rem;
+  font-weight: 600;
+  height: 2.5rem;
+  justify-content: center;
+  padding: 0 0.875rem;
+  transition:
+    background-color 180ms ease,
+    border-color 180ms ease,
+    color 180ms ease,
+    transform 180ms ease;
+  white-space: nowrap;
+}
+
+.button-primary {
+  background: var(--accent-info);
+  border: 1px solid var(--accent-info);
+  color: #061016;
+}
+
+.button-primary:hover {
+  transform: translateY(-1px);
+}
+
+.button-primary:disabled {
+  cursor: wait;
+  opacity: 0.7;
+  transform: none;
+}
+
+.button-secondary {
+  background: var(--surface-control);
+  border: 1px solid var(--border-control);
+  color: var(--text-primary);
+}
+
+.button-secondary:hover {
+  border-color: var(--accent-info);
+}
+
+.segmented-button {
+  align-items: center;
+  border-radius: 0.25rem;
+  color: var(--text-muted);
+  display: inline-flex;
+  font-size: 0.75rem;
+  font-weight: 600;
+  height: 100%;
+  justify-content: center;
+  min-width: 4.5rem;
+  padding: 0 0.75rem;
+  transition:
+    background-color 180ms ease,
+    color 180ms ease;
+}
+
+.segmented-button-active {
+  background: var(--surface-raised);
+  color: var(--text-primary);
+  box-shadow: inset 0 0 0 1px var(--border-subtle);
 }
