@@ -45,7 +45,7 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
 def get_allowed_origins():
     raw_origins = os.getenv(
         "STOCK_API_ALLOWED_ORIGINS",
-        "http://localhost:3000,http://127.0.0.1:3000",
+        "http://localhost:3000,http://127.0.0.1:3000,https://stonks.vercel.app",
     )
     return [origin.strip() for origin in raw_origins.split(",") if origin.strip()]
 
