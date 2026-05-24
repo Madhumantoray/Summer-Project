@@ -91,6 +91,121 @@ Completed:
 - Updated metadata
 - Reworked UI toward a compact quantitative research interface
 
+## Phase 2: Research Infrastructure
+
+Status: Completed
+
+### Database Layer (SQLite + SQLAlchemy)
+
+Completed:
+- SQLAlchemy engine with SQLite WAL mode
+- Session management with context manager
+- Automatic table creation on startup
+- `news_sentiment` table with unique constraint on (symbol, headline, published_at)
+- `stock_prices` table with unique constraint on (symbol, date)
+- `research_metrics` table with unique constraint on (symbol, date)
+- Database file at `backend/database/stocks.db`
+
+### Data Quality Module
+
+Completed:
+- NSE trading calendar (weekends + holidays 2024-2026)
+- `is_trading_day()` and `get_next_trading_day()` functions
+- `get_trading_day_offset()` for N-trading-day forward lookups
+- Timezone normalization to IST (Asia/Kolkata)
+- After-hours alignment: news after 15:30 IST → next trading day
+- Headline deduplication via normalized MD5 fingerprints
+- Missing price value handling (forward fill / drop / interpolate)
+
+### News Collection Script
+
+Completed:
+- Google News RSS as primary source (reuses existing `news_service`)
+- yfinance `Ticker.news` as fallback source
+- Headline deduplication before storage
+- FinBERT sentiment scoring (reuses existing `finbert_service`)
+- Upsert into `news_sentiment` table
+- Safe re-run: duplicate headlines silently skipped
+- Per-symbol collection statistics logging
+
+### Stock Data Collection Script
+
+Completed:
+- yfinance OHLCV download with configurable history period (5 years)
+- RSI, MACD, MACD signal, MACD histogram computation
+- Benchmark index (^NSEI) collection for abnormal returns
+- Upsert into `stock_prices` table
+- Safe re-run: existing dates silently skipped
+
+### Research Service
+
+Completed:
+- Future return computation: 1d, 3d, 7d, 30d windows
+- Abnormal return computation: stock return − benchmark return
+- `get_next_trading_day()` and `get_trading_day_offset()` for date alignment
+- After-market news alignment to prevent look-ahead bias
+- Weekend and holiday handling
+- Batch computation for all sentiment dates per symbol
+
+### Research Dataset Builder
+
+Completed:
+- Joins `news_sentiment` and `stock_prices` tables
+- Aggregates daily sentiment per trading day
+- Computes forward returns for each sentiment observation
+- Computes abnormal returns vs Nifty 50 benchmark
+- Upsert into `research_metrics` (insert or update)
+
+### Daily Automated Pipeline
+
+Completed:
+- `run_daily_pipeline.py` orchestrator
+- Three-step pipeline: news → prices → research metrics
+- Per-step timing and error isolation
+- Summary statistics at completion
+- Exit code reflects success/failure
+- Scheduler examples: Windows Task Scheduler, Linux cron, Python `schedule`
+
+### Research Notebooks
+
+Completed:
+- `correlation_analysis.py` — Jupytext-compatible research notebook
+  - Pearson and Spearman correlations
+  - Correlation heatmap
+  - Scatter plots (sentiment vs returns, colored by symbol)
+  - Rolling sentiment charts (30-day moving average)
+  - Return distributions by sentiment tercile
+  - Per-symbol correlation breakdown
+- `event_study.py` — Jupytext-compatible research notebook
+  - Event classification: Strong Negative (<-0.7), Neutral, Strong Positive (>0.7)
+  - Group statistics: mean returns, volatility, observation counts
+  - Box plots by sentiment group
+  - Mean return comparison with error bars
+  - Cumulative return plots over event windows
+  - Cumulative abnormal return (CAR) plots
+  - Welch's t-tests, Mann-Whitney U tests
+  - Cohen's d effect sizes
+  - 95% confidence intervals
+
+### API Extensions
+
+Completed:
+- `GET /research/metrics/{symbol}` — Return forward/abnormal returns from DB
+- `GET /research/correlation` — Pearson/Spearman correlation summary
+- `GET /research/pipeline/status` — Record counts per table
+- Database initialization via FastAPI lifespan handler
+
+### Stock Universe
+
+Configured symbols:
+- RELIANCE.NS
+- TCS.NS
+- INFY.NS
+- HDFCBANK.NS
+- ICICIBANK.NS
+
+Benchmark: ^NSEI (Nifty 50)
+
 ## Current Architecture
 
 ```txt
@@ -100,34 +215,60 @@ Frontend (Next.js)
     v
 FastAPI Backend
     |
-    | yfinance
-    v
-Yahoo Finance
+    ├── yfinance → Yahoo Finance
+    ├── feedparser → Google News RSS
+    ├── transformers → FinBERT (ProsusAI/finbert)
+    ├── SQLAlchemy → SQLite (stocks.db)
     |
     v
 Indicator Service (pandas + ta)
-```
-
-Frontend modules:
-
-```txt
-app/page.js
-app/components/
-app/hooks/
-app/lib/
+Research Service (scipy + statsmodels)
 ```
 
 Backend modules:
 
 ```txt
-backend/main.py
-backend/security.py
-backend/services/news_service.py
-backend/services/cleaning_service.py
-backend/services/finbert_service.py
-backend/services/aggregation_service.py
-backend/services/sentiment_service.py
-backend/services/stock_data.py
+backend/
+├── main.py                           # FastAPI app + routes
+├── security.py                       # CORS, rate limiting, headers
+├── database/
+│   ├── __init__.py                   # Package exports
+│   ├── database.py                   # Engine, session, init_db
+│   └── models.py                     # SQLAlchemy ORM models
+├── services/
+│   ├── __init__.py
+│   ├── stock_data.py                 # yfinance + indicator computation
+│   ├── news_service.py               # Google News RSS fetching
+│   ├── cleaning_service.py           # Headline cleaning
+│   ├── finbert_service.py            # FinBERT sentiment pipeline
+│   ├── aggregation_service.py        # Daily sentiment aggregation
+│   ├── sentiment_service.py          # Sentiment orchestration
+│   ├── research_service.py           # Forward/abnormal return computation
+│   └── data_quality.py               # Calendar, timezone, dedup utilities
+├── scripts/
+│   ├── __init__.py
+│   ├── config.py                     # Symbols, benchmark, logging
+│   ├── collect_news.py               # News collection + FinBERT scoring
+│   ├── collect_stock_data.py         # OHLCV + indicator download
+│   ├── build_research_dataset.py     # Forward return computation
+│   ├── run_daily_pipeline.py         # Pipeline orchestrator
+│   └── scheduler_examples.md         # Cron / Task Scheduler examples
+└── research/
+    ├── correlation_analysis.py       # Correlation notebook (Jupytext)
+    └── event_study.py                # Event study notebook (Jupytext)
+```
+
+Frontend modules:
+
+```txt
+frontend/
+├── app/
+│   ├── page.js
+│   ├── components/
+│   ├── hooks/
+│   └── lib/
+├── package.json
+└── next.config.mjs
 ```
 
 ## Verified
@@ -137,6 +278,8 @@ backend/services/stock_data.py
 - Desktop layout checked in browser.
 - Mobile layout checked in browser.
 - Backend unavailable state handled gracefully.
+- Database tables create successfully (3 tables, all columns verified).
+- Existing `/stock/{symbol}` and `/sentiment/{symbol}` endpoints unchanged.
 
 ## Known Remaining Items
 
@@ -148,9 +291,9 @@ backend/services/stock_data.py
 
 ## Next Phase Ideas
 
-- Add sentiment ingestion.
-- Add news source management.
-- Add sentiment scoring.
-- Add event study views.
+- Add frontend research dashboard views (correlation charts, event study results).
 - Add watchlists.
-- Add exportable research reports.
+- Add exportable research reports (PDF / HTML).
+- Migrate from SQLite to PostgreSQL for concurrent access.
+- Add more stock symbols and international markets.
+- Add alternative sentiment sources (Twitter, Reddit, news APIs).

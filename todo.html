@@ -1,0 +1,274 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>StockResearch TODO</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --bg: #f6f4ef;
+        --ink: #1c1b1a;
+        --muted: #5b5854;
+        --card: #ffffff;
+        --accent: #1e6f5c;
+        --border: #e6e1d8;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+        background: var(--bg);
+        color: var(--ink);
+        line-height: 1.55;
+      }
+
+      header {
+        padding: 28px 24px 12px 24px;
+      }
+
+      h1 {
+        margin: 0 0 6px 0;
+        font-size: 26px;
+        letter-spacing: 0.3px;
+      }
+
+      .subtitle {
+        margin: 0;
+        color: var(--muted);
+      }
+
+      main {
+        padding: 0 24px 36px 24px;
+        max-width: 980px;
+      }
+
+      section {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 18px 18px 10px 18px;
+        margin: 16px 0;
+        box-shadow: 0 1px 0 rgba(0, 0, 0, 0.03);
+      }
+
+      h2 {
+        margin: 0 0 10px 0;
+        font-size: 18px;
+        color: var(--accent);
+      }
+
+      ul {
+        margin: 0 0 10px 20px;
+        padding: 0;
+      }
+
+      li {
+        margin: 6px 0;
+      }
+
+      code {
+        background: #f1efe8;
+        border: 1px solid var(--border);
+        padding: 1px 6px;
+        border-radius: 6px;
+        font-family: "Consolas", "Courier New", monospace;
+        font-size: 0.95em;
+      }
+
+      .flow {
+        font-family: "Consolas", "Courier New", monospace;
+        background: #fbfaf7;
+        border: 1px dashed var(--border);
+        padding: 10px;
+        border-radius: 10px;
+        white-space: pre-wrap;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>StockResearch TODO</h1>
+      <p class="subtitle">
+        Quick start, pipeline steps, data flow, and research end goal.
+      </p>
+    </header>
+
+    <main>
+      <section>
+        <h2>Start Here</h2>
+        <ul>
+          <li>
+            Backend: open PowerShell in <code>D:\StockResearch\backend</code>,
+            create/activate venv, install requirements, then run
+            <code>uvicorn main:app --reload</code>.
+          </li>
+          <li>
+            Frontend: open PowerShell in
+            <code>D:\StockResearch\frontend</code> and run
+            <code>npm run dev</code>.
+          </li>
+          <li>Open the UI at <code>http://localhost:3000</code>.</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>Scripts To Run (What They Do)</h2>
+        <ul>
+          <li>
+            <code>scripts/run_daily_pipeline.py</code> — orchestrates full daily
+            pipeline (news, sentiment, prices, indicators, research metrics).
+          </li>
+          <li>
+            <code>scripts/collect_news.py</code> — fetches Google News RSS and
+            scores headlines with FinBERT.
+          </li>
+          <li>
+            <code>scripts/collect_stock_data.py</code> — downloads OHLCV +
+            computes RSI/MACD.
+          </li>
+          <li>
+            <code>scripts/build_research_dataset.py</code> — builds forward
+            returns + abnormal returns dataset.
+          </li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>How The DB Forms</h2>
+        <ul>
+          <li>
+            SQLite DB file auto-creates at
+            <code>backend\database\stocks.db</code> when the FastAPI app starts.
+          </li>
+          <li>Tables are created on startup via the FastAPI lifespan hook.</li>
+          <li>
+            Primary tables: <code>news_sentiment</code>,
+            <code>stock_prices</code>, <code>research_metrics</code>.
+          </li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>Data Flow (Short)</h2>
+        <div class="flow">
+          News RSS + yfinance fallback -> Headline cleaning -> FinBERT sentiment
+          scoring -> news_sentiment table Daily stock prices (OHLCV) -> RSI/MACD
+          indicators -> stock_prices table news_sentiment + stock_prices ->
+          forward returns + abnormal returns -> research_metrics table
+        </div>
+      </section>
+
+      <section>
+        <h2>Pipeline / Workflow (Short)</h2>
+        <ul>
+          <li>
+            Run the pipeline daily after market close (16:30 IST recommended).
+          </li>
+          <li>
+            Each step is idempotent: safe to re-run without duplicate data.
+          </li>
+          <li>
+            Use the research endpoints to validate data volume and correlations.
+          </li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>End Goal Of The Research</h2>
+        <ul>
+          <li>
+            Quantify whether news sentiment predicts short-horizon returns for
+            NSE equities.
+          </li>
+          <li>
+            Measure statistical strength with correlation and event study
+            methods.
+          </li>
+          <li>
+            Build a reliable research dataset that grows with daily automation.
+          </li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>8. Hypothesis Testing</h2>
+        <ul>
+          <li>
+            Hypothesis: negative news often makes a stock go up, and positive
+            news often makes a stock underperform.
+          </li>
+          <li>
+            Related to: contrarian investing, market overreaction, behavioral
+            finance.
+          </li>
+          <li>
+            Possible reasons: bad news already priced in, panic selling creates
+            undervaluation, positive expectations become too optimistic.
+          </li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>9. How To Scientifically Test It</h2>
+        <ul>
+          <li>Need sentiment score at time T and future returns after T.</li>
+          <li>
+            Example: sentiment on Day D, then measure returns after 1, 3, 7, and
+            30 days.
+          </li>
+          <li>
+            Compute correlation: corr(sentiment, future_return) and regression:
+            future_return ~ sentiment.
+          </li>
+          <li>
+            Event study: group strongly negative vs strongly positive news and
+            compare average future returns.
+          </li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>10. Expected Reality (End Goal)</h2>
+        <ul>
+          <li>
+            Short-term: negative news leads to a temporary drop, then mean
+            reversion.
+          </li>
+          <li>Long-term: fundamentals dominate sentiment.</li>
+          <li>
+            Meme or high-volatility stocks: sentiment impact is much stronger.
+          </li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>How To Achieve It Without Issues</h2>
+        <ul>
+          <li>
+            Run the backend once to create tables before running pipeline
+            scripts.
+          </li>
+          <li>
+            Keep a stable internet connection for RSS, yfinance, and FinBERT
+            downloads.
+          </li>
+          <li>
+            Schedule the daily pipeline after market close to avoid partial day
+            data.
+          </li>
+          <li>
+            Monitor logs for errors and re-run the pipeline if a step fails.
+          </li>
+          <li>
+            Delete <code>stocks.db</code> only if you want a clean rebuild.
+          </li>
+        </ul>
+      </section>
+    </main>
+  </body>
+</html>
