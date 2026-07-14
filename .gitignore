@@ -89,3 +89,4 @@ build/
 *.db
 *.sqlite3
 *.sqlite
+!backend/database/stocks.db
