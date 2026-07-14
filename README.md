@@ -132,20 +132,40 @@ StockResearch/
 
 ### Backend
 
-```powershell
-cd D:\StockResearch\backend
-venv\Scripts\pip install -r requirements.txt
-uvicorn main:app --reload
-```
+1. Open your terminal and navigate to the backend folder:
+   ```powershell
+   cd backend
+   ```
+2. Create and activate a virtual environment (recommended):
+   ```powershell
+   python -m venv venv
+   .\venv\Scripts\activate
+   ```
+3. Install dependencies:
+   ```powershell
+   pip install -r requirements.txt
+   ```
+4. Start the server:
+   ```powershell
+   python -m uvicorn main:app --reload
+   ```
 
 The first sentiment request may be slow because `ProsusAI/finbert` needs to download and initialise (~440MB).
 
 ### Frontend
 
-```powershell
-cd D:\StockResearch\frontend
-npm run dev
-```
+1. Open a new terminal and navigate to the frontend folder:
+   ```powershell
+   cd frontend
+   ```
+2. Install dependencies (Node.js required):
+   ```powershell
+   npm install
+   ```
+3. Start the development server:
+   ```powershell
+   npm run dev
+   ```
 
 Then open: http://localhost:3000
 
@@ -167,8 +187,8 @@ To reset the database, simply delete `stocks.db` and restart the backend.
 The pipeline collects news, fetches prices, and computes research metrics:
 
 ```powershell
-cd D:\StockResearch\backend
-venv\Scripts\python scripts\run_daily_pipeline.py
+cd backend
+python -m scripts.run_daily_pipeline
 ```
 
 Pipeline steps:
