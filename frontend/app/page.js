@@ -1,19 +1,24 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import axios from "axios";
 import ChartWorkspace from "./components/ChartWorkspace";
 import ControlsBar from "./components/ControlsBar";
+import HypothesisPanel from "./components/HypothesisPanel";
 import MetricStrip from "./components/MetricStrip";
+import NewsPanel from "./components/NewsPanel";
 import StatusMessage from "./components/StatusMessage";
 import ThemeToggle from "./components/ThemeToggle";
 import { useSentimentData } from "./hooks/useSentimentData";
 import { useStockData } from "./hooks/useStockData";
+import { useAnalysisData } from "./hooks/useAnalysisData";
 import { useThemeMode } from "./hooks/useThemeMode";
 import { calculateReturns } from "./lib/marketData";
 
 const DEFAULT_SYMBOL = "RELIANCE";
 const DEFAULT_TIMEFRAME = "1Y";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 const SentimentChart = dynamic(() => import("./components/SentimentChart"), {
   ssr: false,
   loading: () => <SentimentChartShell message="Preparing sentiment panel." />,
@@ -37,7 +42,42 @@ export default function Home() {
     error: sentimentError,
     isLoading: isSentimentLoading,
   } = useSentimentData(filters.symbol, shouldLoadSentiment);
+  const { analysisData, isLoading: isAnalysisLoading, error: analysisError } =
+    useAnalysisData(filters.symbol);
   const returns = useMemo(() => calculateReturns(data), [data]);
+
+  const [news, setNews] = useState([]);
+  const [newsError, setNewsError] = useState("");
+
+  useEffect(() => {
+    const controller = new AbortController();
+
+    async function loadNews() {
+      setNewsError("");
+      try {
+        const response = await axios.get(
+          `${API_BASE_URL}/news/${encodeURIComponent(filters.symbol)}`,
+          { signal: controller.signal, timeout: 15000 },
+        );
+        const payload = response.data;
+        if (!Array.isArray(payload)) {
+          setNews([]);
+          setNewsError(payload?.error || "No news available.");
+          return;
+        }
+        setNews(payload);
+      } catch (err) {
+        if (axios.isCancel(err) || err.name === "CanceledError") {
+          return;
+        }
+        setNews([]);
+        setNewsError("Unable to load news. Run the daily pipeline first.");
+      }
+    }
+
+    loadNews();
+    return () => controller.abort();
+  }, [filters.symbol]);
 
   return (
     <main className="min-h-screen bg-[var(--surface-page)] text-[var(--text-primary)] transition-colors duration-300">
@@ -81,6 +121,7 @@ export default function Home() {
 
         <ChartWorkspace
           data={data}
+          sentimentData={shouldLoadSentiment ? sentimentData : []}
           hoverData={hoverData}
           isLineChart={isLineChart}
           isLoading={isLoading}
@@ -94,6 +135,20 @@ export default function Home() {
           isLoading={isSentimentLoading || !shouldLoadSentiment}
           symbol={filters.symbol}
         />
+
+        <HypothesisPanel
+          analysisData={analysisData}
+          isLoading={isAnalysisLoading}
+          error={analysisError}
+        />
+
+        {newsError ? (
+          <div className="mt-4 rounded-xl border border-[var(--border-panel)] bg-[var(--surface-chart)] p-6 text-center text-[var(--accent-negative)]">
+            {newsError}
+          </div>
+        ) : (
+          <NewsPanel news={news} />
+        )}
       </div>
     </main>
   );

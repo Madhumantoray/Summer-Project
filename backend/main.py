@@ -112,6 +112,46 @@ def get_sentiment(symbol: str):
         logger.exception("Sentiment analysis failed for symbol %s", symbol)
         return {"error": "Unable to analyze sentiment"}
 
+@app.get("/news/{symbol}")
+def get_news(symbol: str):
+    """Return raw news headlines with FinBERT sentiment from the database."""
+    normalized = symbol.strip().upper()
+    if not SYMBOL_PATTERN.fullmatch(normalized):
+        return {"error": "Invalid symbol"}
+
+    db_symbol = f"{normalized}.NS" if not normalized.endswith(".NS") else normalized
+
+    try:
+        try:
+            from backend.database.models import NewsSentiment
+        except ModuleNotFoundError:
+            from database.models import NewsSentiment
+
+        with get_db() as db:
+            rows = (
+                db.query(NewsSentiment)
+                .filter(NewsSentiment.symbol == db_symbol)
+                .order_by(NewsSentiment.published_at.desc())
+                .limit(75)
+                .all()
+            )
+
+        return [
+            {
+                "symbol": r.symbol,
+                "headline": r.headline,
+                "source": r.source,
+                "published_at": r.published_at.isoformat() if r.published_at else None,
+                "sentiment_label": r.sentiment_label,
+                "sentiment_confidence": r.sentiment_confidence,
+                "sentiment_score": r.sentiment_score,
+            }
+            for r in rows
+        ]
+    except Exception:
+        logger.exception("News query failed for %s", symbol)
+        return {"error": "Unable to fetch news"}
+
 
 # ---------------------------------------------------------------------------
 # Research endpoints (new)
@@ -203,7 +243,10 @@ def get_correlation_summary():
 def get_pipeline_status():
     """Return counts of records in each research table."""
     try:
-        from database.models import NewsSentiment, StockPrice
+        try:
+            from backend.database.models import NewsSentiment, StockPrice
+        except ModuleNotFoundError:
+            from database.models import NewsSentiment, StockPrice
 
         with get_db() as db:
             news_count = db.query(NewsSentiment).count()

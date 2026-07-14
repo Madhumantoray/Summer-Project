@@ -45,13 +45,13 @@ export function buildVolumeData(data) {
 }
 
 export function buildRsiData(data) {
+  const startIndex = data.findIndex((item) => Number(item.RSI) !== 0);
+  const validData = startIndex === -1 ? [] : data.slice(startIndex);
   return {
-    values: data
-      .filter((item) => Number(item.RSI) !== 0)
-      .map((item) => ({
-        time: item.Date,
-        value: Number(item.RSI),
-      })),
+    values: validData.map((item) => ({
+      time: item.Date,
+      value: Number(item.RSI),
+    })),
     overbought: data.map((item) => ({
       time: item.Date,
       value: 70,
@@ -64,18 +64,20 @@ export function buildRsiData(data) {
 }
 
 export function buildMacdData(data) {
+  const startIndex = data.findIndex(
+    (item) => Number(item.MACD) !== 0 || Number(item.MACD_SIGNAL) !== 0
+  );
+  const validData = startIndex === -1 ? [] : data.slice(startIndex);
   return {
-    values: data.map((item) => ({
+    values: validData.map((item) => ({
       time: item.Date,
       value: Number(item.MACD),
     })),
-    signal: data
-      .filter((item) => Number(item.MACD) !== 0)
-      .map((item) => ({
-        time: item.Date,
-        value: Number(item.MACD_SIGNAL),
-      })),
-    histogram: data.map((item) => ({
+    signal: validData.map((item) => ({
+      time: item.Date,
+      value: Number(item.MACD_SIGNAL),
+    })),
+    histogram: validData.map((item) => ({
       time: item.Date,
       value: Number(item.MACD_DIFF),
       color:

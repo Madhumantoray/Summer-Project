@@ -33,7 +33,10 @@ from typing import Optional
 
 import pandas as pd
 
-from services.data_quality import get_next_trading_day, get_trading_day_offset
+try:
+    from backend.services.data_quality import get_next_trading_day, get_trading_day_offset
+except ModuleNotFoundError:
+    from services.data_quality import get_next_trading_day, get_trading_day_offset
 
 logger = logging.getLogger(__name__)
 

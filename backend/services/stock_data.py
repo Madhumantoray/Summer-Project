@@ -42,7 +42,10 @@ def get_stock_records(
 
 
 def normalize_nse_symbol(symbol: str) -> str:
-    return f"{symbol.strip().upper()}.NS"
+    symbol = symbol.strip().upper()
+    if not symbol.endswith(".NS"):
+        symbol += ".NS"
+    return symbol
 
 
 def validate_inputs(

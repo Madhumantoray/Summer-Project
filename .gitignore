@@ -81,3 +81,11 @@ build/
 
 .cache/
 *.tsbuildinfo
+
+# =========================
+# DATABASES
+# =========================
+
+*.db
+*.sqlite3
+*.sqlite

@@ -138,13 +138,11 @@ def store_prices(symbol: str, df: pd.DataFrame) -> dict:
                     macd_histogram=float(row.get("macd_histogram", 0) or 0),
                 )
                 db.add(price)
-                db.flush()
+                db.commit()
                 stats["inserted"] += 1
             except Exception:
                 db.rollback()
                 stats["skipped"] += 1
-
-        db.commit()
 
     return stats
 

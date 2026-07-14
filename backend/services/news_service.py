@@ -32,7 +32,7 @@ def fetch_news_headlines(symbol: str):
             articles.append(
                 {
                     "headline": title,
-                    "published_date": published.date().isoformat(),
+                    "published_date": published.isoformat(),
                 }
             )
 

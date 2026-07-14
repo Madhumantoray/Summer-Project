@@ -10,6 +10,7 @@ import {
   buildVolumeData,
   formatHoverData,
 } from "../lib/marketData";
+import { buildSentimentLineData } from "../lib/sentimentData";
 import { chartTheme } from "../lib/theme";
 
 const PRICE_HEIGHT = 620;
@@ -18,6 +19,7 @@ const MACD_HEIGHT = 232;
 
 export default function ChartWorkspace({
   data,
+  sentimentData,
   hoverData,
   isLineChart,
   isLoading,
@@ -36,8 +38,9 @@ export default function ChartWorkspace({
       volume: buildVolumeData(data),
       rsi: buildRsiData(data),
       macd: buildMacdData(data),
+      sentiment: buildSentimentLineData(sentimentData),
     }),
-    [data],
+    [data, sentimentData],
   );
 
   useEffect(() => {
@@ -59,6 +62,10 @@ export default function ChartWorkspace({
         horzLines: { color: activeTheme.grid },
       },
       rightPriceScale: {
+        borderColor: activeTheme.border,
+      },
+      leftPriceScale: {
+        visible: true,
         borderColor: activeTheme.border,
       },
       timeScale: {
@@ -110,13 +117,26 @@ export default function ChartWorkspace({
 
     volumeSeries.setData(derivedData.volume);
 
+    const sentimentSeries = priceChart.addLineSeries({
+      color: activeTheme.sentiment,
+      lineWidth: 2,
+      priceScaleId: "left",
+    });
+    sentimentSeries.setData(derivedData.sentiment);
+
     priceChart.subscribeCrosshairMove((param) => {
       if (!param.time) {
         onHoverData(null);
         return;
       }
 
-      const pointData = data.find((item) => item.Date === param.time);
+      let hoverTime = param.time;
+      if (typeof hoverTime === "object" && hoverTime !== null) {
+        const { year, month, day } = hoverTime;
+        hoverTime = `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+      }
+
+      const pointData = data.find((item) => item.Date === hoverTime || item.Date === param.time);
       onHoverData(pointData ? formatHoverData(pointData) : null);
     });
 

@@ -78,7 +78,7 @@ def _fetch_yfinance_news(symbol: str) -> list[dict]:
             pub_dt = datetime.fromtimestamp(pub_ts, tz=timezone.utc)
             articles.append({
                 "headline": title,
-                "published_date": pub_dt.date().isoformat(),
+                "published_date": pub_dt.isoformat(),
                 "source": "yfinance",
             })
 
@@ -182,14 +182,12 @@ def collect_for_symbol(symbol: str) -> dict:
                     sentiment_score=score.get("sentiment_score"),
                 )
                 db.add(row)
-                db.flush()
+                db.commit()
                 stats["inserted"] += 1
 
             except Exception:
                 db.rollback()
                 stats["skipped"] += 1
-
-        db.commit()
 
     return stats
 
