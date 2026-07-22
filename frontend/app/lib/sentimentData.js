@@ -23,5 +23,9 @@ export function buildSentimentLineData(data) {
         value: Number(value),
       };
     })
-    .filter(Boolean);
+    .filter(Boolean)
+    .sort((a, b) => new Date(a.time) - new Date(b.time))
+    .filter((item, index, array) => {
+      return index === 0 || item.time !== array[index - 1].time;
+    });
 }
